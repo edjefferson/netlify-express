@@ -29,10 +29,10 @@ app.get('/', (req, resmain) => {
 
       
       var root = HTMLParser.parse(data);
-      console.log(root.querySelector('.game_review_summary').rawText.trim())
-      console.log(root.querySelector('.release_date').rawText.trim())
-      console.log(root.querySelector('#developerList').rawText.trim())
-      console.log(root.querySelector('#publisherList').rawText.trim())
+      console.log(root.querySelector('.game_review_summary').rawText)
+      console.log(root.querySelector('.release_date').rawText)
+      console.log(root.querySelector('#developerList').rawText)
+      console.log(root.querySelector('#publisherList').rawText)
         var similar_games =  similar_text.split("},\"").map(
           x =>  JSON.parse(
             "{" + x.split(':{').slice(1).join(':{').replace("}}","") +  "}"
