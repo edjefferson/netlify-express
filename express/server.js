@@ -16,7 +16,7 @@ app.get('/', (req, resmain) => {
 
   console.log(req.query.steamId)
   const https = require('https')
-  var url = "https://store.steampowered.com/app/"+steam_id+"/PowerWash_Simulator/"
+  var url = "https://store.steampowered.com/app/"+1290000+"/PowerWash_Simulator/"
   https.get(url, res => {
     let data = '';
     res.on('data', chunk => {
