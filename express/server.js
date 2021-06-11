@@ -6,15 +6,14 @@ const app = express();
 const bodyParser = require('body-parser');
 const HTMLParser = require('node-html-parser');
 
+const router = express.Router();
 
 
 
 app.get('/', (req, resmain) => {
   resmain.writeHead(200, { 'Content-Type': 'text/html' });
-  const steam_id = req.query.steamId
   console.log("egg")
 
-  console.log(req.query.steamId)
   const https = require('https')
   var url = "https://store.steampowered.com/app/"+1290000+"/PowerWash_Simulator/"
   https.get(url, res => {
@@ -60,6 +59,12 @@ app.get('/', (req, resmain) => {
 
 });
 
+router.get('/another', (req, res) => res.json({ route: req.originalUrl }));
+router.post('/', (req, res) => res.json({ postBody: req.body }));
+
+app.use(bodyParser.json());
+app.use('/.netlify/functions/server', router);  // path must route to lambda
+app.use('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')));
 
 module.exports = app;
 module.exports.handler = serverless(app);
