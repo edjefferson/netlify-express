@@ -11,11 +11,13 @@ const router = express.Router();
 
 
 router.get('/', (req, resmain) => {
-  resmain.writeHead(200, { 'Content-Type': 'text/html' });
-  console.log("egg")
+  var parts = req.headers.referer.split("/")
+  var id = parts[parts.length - 1]
+
+  console.log(id)
 
   const https = require('https')
-  var url = "https://store.steampowered.com/app/"+1290000+"/PowerWash_Simulator/"
+  var url = "https://store.steampowered.com/app/"+id+"/PowerWash_Simulator/"
   https.get(url, res => {
     let data = '';
     res.on('data', chunk => {
@@ -38,11 +40,16 @@ router.get('/', (req, resmain) => {
             
             )
         )
+
+        similar_games.map (x => {
+          x["id"] = x["small_capsulev5"].split("/")[5]
+          return x
+        })
+        console.log(req.headers.referer) 
+        resmain.writeHead(200, { 'Content-Type': 'application/json' });
+
         resmain.write(
-          
-          JSON.stringify(similar_games)
-        
-        )
+          JSON.stringify(similar_games))
       
       } catch(e) {
         resmain.write(e.message);
