@@ -10,7 +10,7 @@ const router = express.Router();
 
 
 
-app.get('/', (req, resmain) => {
+router.get('/', (req, resmain) => {
   resmain.writeHead(200, { 'Content-Type': 'text/html' });
   console.log("egg")
 
