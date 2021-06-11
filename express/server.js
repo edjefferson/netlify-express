@@ -48,7 +48,7 @@ router.post('/', (req, resmain) => {
         resmain.writeHead(200, { 'Content-Type': 'application/json' });
 
         resmain.write(
-          JSON.stringify(similar_games))
+          JSON.stringify(similar_games[0..8]))
       
       } catch(e) {
         resmain.write(e.message);
