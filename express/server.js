@@ -10,11 +10,10 @@ const router = express.Router();
 
 
 
-router.get('/', (req, resmain) => {
-  var parts = req.headers.referer.split("/")
-  var id = parts[parts.length - 1]
+router.post('/', (req, resmain) => {
+  var id = req.body.id
 
-  console.log(id)
+  console.log(req.body.id)
 
   const https = require('https')
   var url = "https://store.steampowered.com/app/"+id+"/PowerWash_Simulator/"
@@ -67,7 +66,6 @@ router.get('/', (req, resmain) => {
 });
 
 router.get('/another', (req, res) => res.json({ route: req.originalUrl }));
-router.post('/', (req, res) => res.json({ postBody: req.body }));
 
 app.use(bodyParser.json());
 app.use('/.netlify/functions/server', router);  // path must route to lambda
