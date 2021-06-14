@@ -29,6 +29,7 @@
     "serverless-http": "^2.3.0"
   },
   "dependencies": {
+    "got": "^6.7.1",
     "node-html-parser": "^3.3.5"
   }
 }

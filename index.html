@@ -1,45 +1,110 @@
 <!DOCTYPE html>
 <html>
   <style>
+
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+    body {
+      font-family: Roboto;
+    }
+    table {
+      width: 100%;
+      table-layout: fixed;
+
+    }
+    td {
+    }
     table tr td{
       border: 1px black solid;
     }
   </style>
   <body>
-    <p>Related Games</p>
     <table id="myTable">
-
+      <p><span id="gameCount">0</span> of 10 loaded</p>
+      <tr>
+        <th>
+          Id
+        </th>
+        <th>
+          Name
+        </th>
+        <th>
+          Review summary
+        </th>
+        <th>
+          Release date
+        </th>
+        <th>
+          Developers
+        </th>
+        <th>
+          Publishers
+        </th>
+        <th>
+          Languages
+        </th>
+        <th>
+          Tags
+        </th>
+        <th>
+          Genres
+        </th>
+        <th>
+          Live Player Count
+        </th>
+        
+      </tr>
     </table>
 <script>
+  let gameCount = 0
+  const dataToTable = (data) => {
+    const table = document.getElementById("myTable");
+    let rows = {}
+    row = table.insertRow()
 
+    Object.keys(data).forEach( (d, i) => {
+
+      if (d != "similarGames") {
+        
+        cell = row.insertCell();
+        cell.innerHTML = data[d];
+
+      }
+    })
+    gameCount += 1
+    document.querySelector("#gameCount").innerText = gameCount;
+  }
+
+  const fetchData = (first, id) => {
+    fetch("/.netlify/functions/server",
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({id: id})
+      }
+    )
+    .then(response => response.json())
+    .then(function (data) {
+      console.log('Request succeeded with JSON response', data);
+
+      dataToTable(data)
+      if (first) {
+        data.similarGames.forEach(s =>
+          fetchData(false,s.id)
+        )
+      }
+    })
+    .catch(function (error) {
+      console.log('Request failed', error);
+    });
+  }
+  
   const urlSearchParams = new URLSearchParams(window.location.search);
   const params = Object.fromEntries(urlSearchParams.entries());
   console.log(params)
-  fetch("/.netlify/functions/server",
-  {method: 'POST',
-  headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-  body: JSON.stringify({id: params.steamId})})
-  .then(response => response.json())
-  .then(function (data) {
-    console.log('Request succeeded with JSON response', data);
-    data.forEach(x => {
-      var table = document.getElementById("myTable");
-      var row = table.insertRow();
-      var cell1 = row.insertCell();
-      var cell2 = row.insertCell();
-
-      cell1.innerHTML = x.name;
-      cell2.innerHTML = x.id;
-
-    })
-
-  })
-  .catch(function (error) {
-    console.log('Request failed', error);
-  });
+  fetchData(true, params.steamId)
 </script>
 </body>
 </html>
