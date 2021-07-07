@@ -5,6 +5,11 @@
     @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
     body {
       font-family: Roboto;
+      font-size: 0.8em;
+    }
+
+    #results {
+      display: none;
     }
     table {
       width: 100%;
@@ -12,51 +17,94 @@
 
     }
     td {
+      overflow:hidden;
     }
     table tr td{
       border: 1px black solid;
     }
   </style>
   <body>
-    <table id="myTable">
-      <p><span id="gameCount">0</span> of 10 loaded</p>
-      <tr>
-        <th>
-          Id
-        </th>
-        <th>
-          Name
-        </th>
-        <th>
-          Review summary
-        </th>
-        <th>
-          Release date
-        </th>
-        <th>
-          Developers
-        </th>
-        <th>
-          Publishers
-        </th>
-        <th>
-          Languages
-        </th>
-        <th>
-          Tags
-        </th>
-        <th>
-          Genres
-        </th>
-        <th>
-          Live Player Count
-        </th>
-        
-      </tr>
-    </table>
+    <h1>Water Vapour Scraper</h1>
+    <div id="input">
+      <p>Enter ID from popular gaming service:</p>
+      <input id="steamidinput"></input>
+      <button id="getdata">Get some data</button>
+    </div>
+    <div id="results">
+      <table id="myTable">
+        <p><span id="gameCount">0</span> of 10 loaded</p>
+        <button id="downloadCsv">Download CSV</button>
+        <tr>
+          <th>
+            Id
+          </th>
+          <th>
+            Name
+          </th>
+          <th>
+            Release date
+          </th>
+          <th>
+            Discounted price
+          </th>
+          <th>
+            Original price
+          </th>
+          <th>
+            Developers
+          </th>
+          <th>
+            Publishers
+          </th>
+          <th>
+            Languages
+          </th>
+          <th>
+            Tags
+          </th>
+          <th>
+            Genres
+          </th>
+          <th>
+            Live Player Count
+          </th>
+          <th>
+            Review summary
+          </th>
+          <th>
+            Review Count
+          </th>
+          <th>
+            Positive Reviews
+          </th>
+          <th>
+            Negative Reviews
+          </th>
+          <th>
+            Metascore
+          </th>
+          <th>
+            Owner Count
+          </th>
+          <th>
+            Followers
+          </th>
+          <th>
+            Peak concurrent players yesterday
+          </th>
+          <th>
+            Playtime in the last 2 weeks
+          </th>
+          <th>
+            Playtime total
+          </th>
+          
+        </tr>
+      </table>
+    </div>
 <script>
   let gameCount = 0
-
+  let gameData = []
   const dataToTable = (data) => {
     const table = document.getElementById("myTable");
     let rows = {}
@@ -73,6 +121,22 @@
     })
     gameCount += 1
     document.querySelector("#gameCount").innerText = gameCount;
+  }
+  const downloadCsv = () => {
+    
+    let csvContent = "data:text/csv;charset=utf-8," 
+
+    + Array.from(document.querySelectorAll("th")).map(h => h.rawText).join(",")
+    + gameData.map(e => Object.keys(e).map(f => e[f]).slice(1).join(",")).join("\n");
+    console.log(csvContent)
+
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "steamdata" + mainId + ".csv");
+    document.body.appendChild(link); // Required for FF
+
+    link.click()
   }
 
   const fetchData = (first, id) => {
@@ -91,6 +155,7 @@
       console.log('Request succeeded with JSON response', data);
 
       dataToTable(data)
+      gameData.push(data)
       if (first) {
         data.similarGames.forEach(s =>
           fetchData(false,s.id)
@@ -104,8 +169,29 @@
   
   const urlSearchParams = new URLSearchParams(window.location.search);
   const params = Object.fromEntries(urlSearchParams.entries());
+
+  const goToData = () => {
+    gameCount = 0
+    gameData = []
+    window.location.href='/?steamId=' + document.querySelector("#steamidinput").value
+  }
+
+  let mainId
   console.log(params)
-  if (params.steamId) fetchData(true, params.steamId)
+  if (params.steamId) {
+    document.getElementById("results").style.display = "block"
+
+    mainId = params.steamId
+    document.querySelector("#steamidinput").value = mainId
+    fetchData(true, params.steamId)
+    document.querySelector("#downloadCsv").addEventListener("click", downloadCsv);
+
+  }
+  document.querySelector("#getdata").addEventListener("click", goToData)
+
+
+
+
 </script>
 </body>
 </html>
