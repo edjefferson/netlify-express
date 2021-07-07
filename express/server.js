@@ -43,12 +43,12 @@ router.post('/', (req, resmain) => {
     
       const root = HTMLParser.parse(data);
       const name = root.querySelector('#appHubAppName').rawText.trim()
-
+      console.log(name)
         
       const review_summary = root.querySelector('.game_review_summary').rawText.trim()
       const release_date = root.querySelector('.release_date').querySelector('.date').rawText.trim()
-      const developers = root.querySelector('#developerList').querySelectorAll('a').map(x => x.rawText.trim())
-      const publishers = root.querySelector('#publisherList').querySelectorAll('a').map(x => x.rawText.trim())
+      const developers = root.querySelectorAll('.dev_row')[0].querySelectorAll('a').map(x => x.rawText.trim())
+      const publishers = root.querySelectorAll('.dev_row')[1].querySelectorAll('a').map(x => x.rawText.trim())
       const languages = root.querySelector('.game_language_options').querySelectorAll("tr").slice(1)
         .map( row => row.querySelector('td').rawText.trim())
       const tags =  JSON.parse("[{" + data.split("InitAppTagModal")[1].split("[{")[1].split("}],")[0] + "}]").map(x => x.name)
