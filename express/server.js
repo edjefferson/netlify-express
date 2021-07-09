@@ -87,7 +87,7 @@ router.post('/', (req, resmain) => {
       try {
         console.log(id)
 
-        let url = "https://store.steampowered.com/app/"+id+"/"
+        let url = "https://store.steampowered.com/app/"+id+"/?cc=uk"
 
         const res = await got(url, { json: false });
         const data = res.body
