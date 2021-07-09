@@ -160,8 +160,11 @@
       gameData.push(data)
       if (first) {
         document.querySelector("#toLoad").innerText = data.similarGames.length + 1
-        data.similarGames.forEach(s =>
+        data.similarGames.forEach( (s,i) => {
+          setTimeout(function () {
           fetchData(false,s)
+        }, i * 100);
+        }
         )
       }
     })

@@ -53,7 +53,6 @@ const getSteamSpy = async(id) => {
     
   } catch (error) {
     console.log(error);
-    
   }
   return {
     owners: owners,
@@ -64,15 +63,15 @@ const getSteamSpy = async(id) => {
   }
 }
 
-let retries = 0
 let similar_games
 let id
-
 router.post('/', (req, resmain) => {
+  let payload
+  let retries
 
   (async () => {
     let headersent = false
-
+    retries = 0
     id = req.body.id
     let url = "https://store.steampowered.com/recommended/morelike/app/"+id+"/"
     if (req.body.first) {
@@ -84,7 +83,7 @@ router.post('/', (req, resmain) => {
         return s.getAttribute("data-ds-appid")
       })
     }
-    while (retries < 3) {
+    while (payload === undefined && retries < 3) {
       try {
         console.log(id)
 
@@ -147,7 +146,7 @@ router.post('/', (req, resmain) => {
 
       
         
-        let payload = {
+        payload = {
           similarGames: similar_games ? similar_games.slice(0, 9) : similar_games ,
           id: id,
           name: name,
@@ -184,6 +183,7 @@ router.post('/', (req, resmain) => {
           JSON.stringify(payload)
         )
         resmain.end();
+        
       } catch(e) {
         console.log("error")
         console.log(e.message)
