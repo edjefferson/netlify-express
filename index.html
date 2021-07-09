@@ -149,7 +149,7 @@
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({id: id})
+        body: JSON.stringify({id: id, first: first})
       }
     )
     .then(response => response.json())
@@ -159,9 +159,9 @@
       dataToTable(data)
       gameData.push(data)
       if (first) {
-        document.querySelector("#toLoad").innerText = data.similarGames.length
+        document.querySelector("#toLoad").innerText = data.similarGames.length + 1
         data.similarGames.forEach(s =>
-          fetchData(false,s.id)
+          fetchData(false,s)
         )
       }
     })

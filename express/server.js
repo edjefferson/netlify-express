@@ -37,7 +37,6 @@ const getSteamSpy = async(id) => {
     const data = response.body
     const root = HTMLParser.parse(data);
     let text = root.querySelector("div.p-r-30").innerHTML
-    console.log(text.split("Owners")[1])
     owners = text.split("Owners</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
     owners = owners.replace(/,/g,"")
     owners = owners.split("Steam")[0].trim()
@@ -66,41 +65,39 @@ const getSteamSpy = async(id) => {
 }
 
 let retries = 0
-
+let similar_games
+let id
 
 router.post('/', (req, resmain) => {
 
   (async () => {
     let headersent = false
 
-    let id = req.body.id
+    id = req.body.id
+    let url = "https://store.steampowered.com/recommended/morelike/app/"+id+"/"
+    if (req.body.first) {
+      const simres = await got(url, { json: false });
+      const simdata = simres.body
+      const simroot = HTMLParser.parse(simdata);
 
+      similar_games = Array.from(simroot.querySelectorAll('.similar_grid_capsule')).map(s => {
+        return s.getAttribute("data-ds-appid")
+      })
+    }
     while (retries < 3) {
       try {
-        let url = "https://store.steampowered.com/app/"+id+"/PowerWash_Simulator/"
+        console.log(id)
+
+        let url = "https://store.steampowered.com/app/"+id+"/"
 
         const res = await got(url, { json: false });
         const data = res.body
         
-        const similar_text = data.split("{\"rgApps\":")[1].split(",\"rgPackages")[0]
-        let similar_games =  similar_text.split("},\"").map(
-          x =>  
-            JSON.parse(
-            "{" + x.split(':{').slice(1).join(':{').replace("}}","") +  "}"
-            )
-          
-        )
-
-        similar_games.map (x => {
-          x["id"] = x["small_capsulev5"].split("/")[5]
-          return x
-        })
         
         
 
         const root = HTMLParser.parse(data);
         const name = root.querySelector('#appHubAppName').rawText.trim()
-        console.log(id)
         console.log(name)
 
         const review_summary = root.querySelector('.game_review_summary').rawText.trim()
@@ -151,7 +148,7 @@ router.post('/', (req, resmain) => {
       
         
         let payload = {
-          similarGames: similar_games.slice(0, 9),
+          similarGames: similar_games ? similar_games.slice(0, 9) : similar_games ,
           id: id,
           name: name,
           releaseDate: release_date.replace(",",""),
