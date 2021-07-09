@@ -35,7 +35,7 @@
     </div>
     <div id="results">
       <table id="myTable">
-        <p><span id="gameCount">0</span> of 10 loaded</p>
+        <p><span id="gameCount">0</span> of <span id="toLoad">10</span> loaded</p>
         <button id="downloadCsv">Download CSV</button>
         <tr>
           <th>
@@ -159,6 +159,7 @@
       dataToTable(data)
       gameData.push(data)
       if (first) {
+        document.querySelector("#gameCount").innerText = data.similarGames.length
         data.similarGames.forEach(s =>
           fetchData(false,s.id)
         )
