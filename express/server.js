@@ -11,6 +11,10 @@ const got = require('got');
 
 const router = express.Router();
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 const getPlayerCount = async(id) => {
 
   try {
@@ -191,6 +195,7 @@ router.post('/', (req, resmain) => {
         retries += 1
 
       }
+      await sleep(1000);
     }
 
     
