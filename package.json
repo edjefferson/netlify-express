@@ -1,5 +1,5 @@
 {
-  "name": "netlify-express",
+  "name": "vapour-scrape",
   "version": "0.0.1",
   "description": "Example of how to deploy a Express.js Netlify app.",
   "main": "functions/server.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/neverendingqs/netlify-express.git"
+    "url": "git+https://github.com/edjefferson/vapourscrape.git"
   },
   "keywords": [
     "netlify",
@@ -18,9 +18,9 @@
   "author": "neverendingqs",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/neverendingqs/netlify-express/issues"
+    "url": "https://github.com/edjefferson/vapourscrape/issues"
   },
-  "homepage": "https://github.com/neverendingqs/netlify-express#readme",
+  "homepage": "https://github.com/edjefferson/vapourscrape/#readme",
   "devDependencies": {
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
