@@ -83,7 +83,7 @@ router.post('/', (req, resmain) => {
         return s.getAttribute("data-ds-appid")
       })
     }
-    while (payload === undefined && retries < 3) {
+    while (payload === undefined && retries < 5) {
       try {
         console.log(id)
 
