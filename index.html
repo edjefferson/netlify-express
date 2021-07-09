@@ -129,7 +129,7 @@
     console.log(Array.from(document.querySelectorAll("th")).map(h => h.textContent.trim()))
     let csvContent = "data:text/csv;charset=utf-8," 
 
-    + Array.from(document.querySelectorAll("th")).map(h => h.rawText).join(",") + "\n"
+    + Array.from(document.querySelectorAll("th")).map(h => h.rawText.replace(/,/g," ")).join(",") + "\n"
     + gameData.map(e => Object.keys(e).map(f => e[f]).slice(1).join(",")).join("\n");
     console.log(csvContent)
 
