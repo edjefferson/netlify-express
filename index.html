@@ -159,7 +159,7 @@
       dataToTable(data)
       gameData.push(data)
       if (first) {
-        document.querySelector("#gameCount").innerText = data.similarGames.length
+        document.querySelector("#toLoad").innerText = data.similarGames.length
         data.similarGames.forEach(s =>
           fetchData(false,s.id)
         )
