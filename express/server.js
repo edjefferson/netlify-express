@@ -36,20 +36,20 @@ const getSteamSpy = async(id) => {
     const response = await got(url, { json: false })
     const data = response.body
     const root = HTMLParser.parse(data);
-    let text = root.querySelector("div.p-r-30").rawText
-
-    owners = text.split("Owners:")[1].split("Followers")[0].trim().replace("&nbsp;..&nbsp;","-")
+    let text = root.querySelector("div.p-r-30").innerHTML
+    console.log(text.split("Owners")[1])
+    owners = text.split("Owners</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
     owners = owners.replace(/,/g,"")
     owners = owners.split("Steam")[0].trim()
 
-    followers = text.split("Followers:")[1].split("Peak")[0].trim().replace("&nbsp;..&nbsp;","-")
+    followers = text.split("Followers</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
     followers = followers.replace(/,/g,"")
 
-    peakPlayers = text.split("Peak concurrent players yesterday:")[1].split("YouTube")[0].trim().replace("&nbsp;..&nbsp;","-")
+    peakPlayers = text.split("Peak concurrent players yesterday</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
     peakPlayers = peakPlayers.replace(/,/g,"")
 
-    playtime2weeks = text.split("Playtime in the last 2 weeks:")[1].split("Playtime")[0].trim()
-    playtimeTotal = text.split("Playtime total:")[1].split("Steam")[0].trim()
+    playtime2weeks = text.split("Playtime in the last 2 weeks:</strong>")[1].split("<br>")[0].trim()
+    playtimeTotal = text.split("Playtime total:</strong>")[1].split("<br>")[0].trim()
 
     
   } catch (error) {
@@ -80,13 +80,31 @@ router.post('/', (req, resmain) => {
 
         
     try {
-      const similar_text = data.split("{\"rgApps\":")[1].split(",\"rgPackages")[0]
+      let similar_games
+      try {
+        const similar_text = data.split("{\"rgApps\":")[1].split(",\"rgPackages")[0]
+        similar_games =  similar_text.split("},\"").map(
+          x =>  
+            JSON.parse(
+            "{" + x.split(':{').slice(1).join(':{').replace("}}","") +  "}"
+            )
+          
+        )
+  
+        similar_games.map (x => {
+          x["id"] = x["small_capsulev5"].split("/")[5]
+          return x
+        })
+      }
+      catch(error) {
+        console.log(error)
+      }
 
-    
       const root = HTMLParser.parse(data);
       const name = root.querySelector('#appHubAppName').rawText.trim()
-      console.log(name)
       console.log(id)
+      console.log(name)
+
       const review_summary = root.querySelector('.game_review_summary').rawText.trim()
       const release_date = root.querySelector('.release_date').querySelector('.date').rawText.trim()
       const developers = root.querySelectorAll('.dev_row')[0].querySelectorAll('a').map(x => x.rawText.trim())
@@ -125,18 +143,7 @@ router.post('/', (req, resmain) => {
         originalPrice = purchaseAction.querySelector(".game_purchase_price").rawText.trim()
       }
       
-      let similar_games =  similar_text.split("},\"").map(
-        x =>  
-          JSON.parse(
-          "{" + x.split(':{').slice(1).join(':{').replace("}}","") +  "}"
-          )
-        
-      )
-
-      similar_games.map (x => {
-        x["id"] = x["small_capsulev5"].split("/")[5]
-        return x
-      })
+      
 
       let playerCount
       await getPlayerCount(id).then(x=> playerCount = x)
