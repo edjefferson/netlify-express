@@ -30,6 +30,10 @@
   },
   "dependencies": {
     "got": "^6.7.1",
-    "node-html-parser": "^3.3.5"
+    "node-html-parser": "^3.3.5",
+    "promisify": "^0.0.3",
+    "request": "^2.88.2",
+    "tough-cookie": "^4.0.0",
+    "util.promisify": "^1.1.1"
   }
 }
