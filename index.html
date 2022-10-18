@@ -132,9 +132,8 @@
     let csvContent = "data:text/csv;charset=utf-8," 
 
     + Array.from(document.querySelectorAll("th")).map(h => h.textContent ? h.textContent.trim().replace(/,/g," " ) : h.textContent ).join(",") + "\n"
-    + gameData.map(e => Object.keys(e).map(f => e[f]).slice(1).join(",")).join("\n");
-    //console.log(csvContent)
-
+    + gameData.map(e => Object.keys(e).filter(k => !k.startsWith("similar")).map(f => "\"" + e[f] + "\"").join(",")).join("\n");
+    console.log(gameData.map(e => Object.keys(e).map(f => "\"" + e[f]).join(",") ).join("\n"))
     var encodedUri = encodeURI(csvContent);
     var link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -162,6 +161,7 @@
       data.type = type
       dataToTable(data)
       gameData.push(data)
+      console.log(gameData)
       if (first) {
         console.log("first")
         let x = 0
