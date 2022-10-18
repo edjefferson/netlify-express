@@ -101,6 +101,9 @@
           <th>
             Playtime total
           </th>
+          <th>
+            Type
+          </th>
           
         </tr>
       </table>
@@ -115,7 +118,7 @@
 
     Object.keys(data).forEach( (d, i) => {
 
-      if (d != "similarGames") {
+      if (!d.startsWith("similarGames")) {
         
         cell = row.insertCell();
         cell.innerHTML = data[d];
@@ -130,7 +133,7 @@
 
     + Array.from(document.querySelectorAll("th")).map(h => h.textContent ? h.textContent.trim().replace(/,/g," " ) : h.textContent ).join(",") + "\n"
     + gameData.map(e => Object.keys(e).map(f => e[f]).slice(1).join(",")).join("\n");
-    console.log(csvContent)
+    //console.log(csvContent)
 
     var encodedUri = encodeURI(csvContent);
     var link = document.createElement("a");
@@ -141,7 +144,8 @@
     link.click()
   }
 
-  const fetchData = (first, id) => {
+  const fetchData = (first, id, type ) => {
+    console.log(first,id,type)
     fetch("/.netlify/functions/server",
       {
         method: 'POST',
@@ -149,23 +153,64 @@
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({id: id, first: first})
+        body: JSON.stringify({id: id, first: first, type: type})
       }
     )
     .then(response => response.json())
     .then(function (data) {
       console.log('Request succeeded with JSON response', data);
-
+      data.type = type
       dataToTable(data)
       gameData.push(data)
       if (first) {
-        document.querySelector("#toLoad").innerText = data.similarGames.length + 1
-        data.similarGames.forEach( (s,i) => {
-          setTimeout(function () {
-          fetchData(false,s)
-        }, i * 500);
+        console.log("first")
+        let x = 0
+        let games = []
+
+        data.similarGames.forEach(sg => {
+          if (sg !== "" && !games.map(g => g[0]).includes(sg)) {
+                games.push([sg,"released"])
+              }
+        })
+        if (includeTopSellers) {
+          data.similarGamesTS.forEach(sg => 
+            {
+              if (sg !== "" && !games.map(g => g[0]).includes(sg)) {
+                games.push([sg,"topsellers"])
+              }
+            }
+          )
+          
         }
-        )
+        if (includeNewReleases) {
+          data.similarGamesNR.forEach(sg => 
+            {
+              if (sg !== "" && !games.map(g => g[0]).includes(sg)) {
+                games.push([sg,"newreleases"])
+              }
+            }
+          )
+        }
+        if (includeUpcoming) {
+          data.similarGamesUR.forEach(sg => 
+            {
+              if (sg !== "" && !games.map(g => g[0]).includes(sg)) {
+                games.push([sg,"upcomingreleases"])
+              }
+            }
+          )
+        }
+       
+
+        console.log(games)
+        document.querySelector("#toLoad").innerText = games.length + 1
+        games.forEach( (s) => {
+          setTimeout(function () {
+            fetchData(false,s[0],s[1])
+          }, x * 500);
+          x += 1
+        })
+        
       }
     })
     .catch(function (error) {
@@ -181,7 +226,9 @@
     gameData = []
     window.location.href='/?steamId=' + document.querySelector("#steamidinput").value
   }
-
+  let includeNewReleases = true
+  let includeUpcoming = true
+  let includeTopSellers = true
   let mainId
   console.log(params)
   if (params.steamId) {
@@ -189,10 +236,23 @@
 
     mainId = params.steamId
     document.querySelector("#steamidinput").value = mainId
-    fetchData(true, params.steamId)
+    fetchData(true, params.steamId, "original")
     document.querySelector("#downloadCsv").addEventListener("click", downloadCsv);
 
   }
+
+  if (params.topsellers === "false") {
+    includeTopSellers = false
+  }
+
+  if (params.upcoming === "false") {
+    includeUpcoming = false
+  }
+
+  if (params.newreleases === "false") {
+   includeNewReleases = false
+  }
+  console.log(includeTopSellers)
   document.querySelector("#getdata").addEventListener("click", goToData)
 
 

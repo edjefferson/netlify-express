@@ -39,43 +39,56 @@ const getPlayerCount = async(id) => {
     let url = "https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=" + id + "&key=702C5A7D15512AE0477A5D60DC28A724"
 
       const response = await got(url, { json: true })
-    return response.body.response.player_count
+
+      if (response.body.response.player_count){
+        return response.body.response.player_count
+      } else {
+        return ""
+      }
   } catch (error) {
-    console.log(error.response.body);
+    //console.log(error.response.body);
   }
 }
 
-const getSteamSpy = async(id) => {
+const getSteamSpy = async(id,type) => {
   let owners = ""
   let followers = ""
   let peakPlayers = ""
   let playtime2weeks = ""
   let playtimeTotal = ""
 
-  try {
-    let url = "https://steamspy.com/app/" + id
+    try {
+      let url = "https://steamspy.com/app/" + id
+      //console.log(url)
+      const response = await got(url, { json: false })
+      const data = response.body
+      const root = HTMLParser.parse(data);
+      let text = root.querySelector("div.p-r-30").innerHTML
+      owners = text.split("Owners</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
+      owners = owners.replace(/,/g,"")
+      owners = owners.split("Steam")[0].trim()
 
-    const response = await got(url, { json: false })
-    const data = response.body
-    const root = HTMLParser.parse(data);
-    let text = root.querySelector("div.p-r-30").innerHTML
-    owners = text.split("Owners</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
-    owners = owners.replace(/,/g,"")
-    owners = owners.split("Steam")[0].trim()
+      followers = text.split("Followers</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
+      followers = followers.replace(/,/g,"")
 
-    followers = text.split("Followers</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
-    followers = followers.replace(/,/g,"")
+      peakPlayers = text.split("Peak concurrent players yesterday</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
+      peakPlayers = peakPlayers.replace(/,/g,"")
+      //console.log(text)
+      
+      try {
 
-    peakPlayers = text.split("Peak concurrent players yesterday</strong>:")[1].split("<br>")[0].trim().replace("&nbsp;..&nbsp;","-")
-    peakPlayers = peakPlayers.replace(/,/g,"")
-
-    playtime2weeks = text.split("Playtime in the last 2 weeks:</strong>")[1].split("<br>")[0].trim()
+      
+      playtime2weeks = text.split("Playtime in the last 2 weeks:</strong>")[1].split("<br>")[0].trim()
+    } catch (error) {
+      playtime2weeks = ""
+    }
     playtimeTotal = text.split("Playtime total:</strong>")[1].split("<br>")[0].trim()
 
-    
+      
   } catch (error) {
-    console.log(error);
-  }
+      //console.log(error);
+    }
+  
   return {
     owners: owners,
     followers: followers,
@@ -85,11 +98,18 @@ const getSteamSpy = async(id) => {
   }
 }
 
-let similar_games
-let id
+
+
+
 router.post('/', (req, resmain) => {
+  let id
+
   let payload
   let retries
+  let similar_games
+  let similar_games_ts
+  let similar_games_nr
+  let similar_games_ur
 
   (async () => {
     let headersent = false
@@ -97,22 +117,36 @@ router.post('/', (req, resmain) => {
     id = req.body.id
     let url = "https://store.steampowered.com/recommended/morelike/app/"+id+"/"
     if (req.body.first) {
+      console.log("")
       const simres = await got(url, { json: false });
       const simdata = simres.body
       const simroot = HTMLParser.parse(simdata);
 
-      similar_games = Array.from(simroot.querySelectorAll('.similar_grid_capsule')).map(s => {
+      similar_games = Array.from(simroot.querySelector("div#released").querySelectorAll('.similar_grid_capsule')).map(s => {
         return s.getAttribute("data-ds-appid")
       })
+
+      similar_games_ts = Array.from(simroot.querySelector("div#topselling").querySelectorAll('.similar_grid_capsule')).map(s => {
+        return s.getAttribute("data-ds-appid")
+      })
+
+      similar_games_nr = Array.from(simroot.querySelector("div#newreleases").querySelectorAll('.similar_grid_capsule')).map(s => {
+        return s.getAttribute("data-ds-appid")
+      })
+
+      similar_games_ur = Array.from(simroot.querySelector("div#comingsoon").querySelectorAll('.similar_grid_capsule')).map(s => {
+        return s.getAttribute("data-ds-appid")
+      })
+
     }
     while (payload === undefined && retries < 1) {
       try {
-        console.log(id)
+        //console.log(id)
 
         let url = "https://store.steampowered.com/app/"+id+"/?cc=uk"
-
+        //console.log(url)
         await request({url: url, jar: j}, async function (error, response, body) {
-          console.error('error:', error); // Print the error if one occurred
+          //console.error('error:', error); // Print the error if one occurred
 
           const data = body
           const root = HTMLParser.parse(data);
@@ -122,26 +156,36 @@ router.post('/', (req, resmain) => {
           
           
 
+          //console.log("egg")
 
           const name = root.querySelector('#appHubAppName').rawText.trim()
-          console.log(name)
+          //console.log(name)
+          let review_summary = ""
+          try {
+            review_summary = root.querySelector('.game_review_summary').rawText.trim()
+   
+          } catch (e) {
 
-          const review_summary = root.querySelector('.game_review_summary').rawText.trim()
+          }
           const release_date = root.querySelector('.release_date').querySelector('.date').rawText.trim()
           const developers = root.querySelectorAll('.dev_row')[0].querySelectorAll('a').map(x => x.rawText.trim())
           const publishers = root.querySelectorAll('.dev_row')[1].querySelectorAll('a').map(x => x.rawText.trim())
           const languages = root.querySelector('.game_language_options').querySelectorAll("tr").slice(1)
             .map( row => row.querySelector('td').rawText.trim())
-          const tags =  JSON.parse("[{" + data.split("InitAppTagModal")[1].split("[{")[1].split("}],")[0] + "}]").map(x => x.name)
+          let tags = []
+          try {
+           tags =  JSON.parse("[{" + data.split("InitAppTagModal")[1].split("[{")[1].split("}],")[0] + "}]").map(x => x.name)
+          } catch (e) {
+
+          }
           
           const genres = root.querySelector('.details_block').querySelectorAll('a[href*="genre"]').map(x => x.rawText.trim())
           
-
           let reviews = ["review_type_all","review_type_positive","review_type_negative"].map(r => {
-              if (root.querySelector("label[for=\""+r+"\"]").querySelector('span')) {
+              if (root.querySelector("label[for=\""+r+"\"]") && root.querySelector("label[for=\""+r+"\"]").querySelector('span')) {
                 return root.querySelector("label[for=\""+r+"\"]").querySelector('span').rawText.trim().slice(1).slice(0, -1).replace(",", '' )
               } else {
-                return undefined
+                return ""
               }
             }
           )
@@ -152,21 +196,21 @@ router.post('/', (req, resmain) => {
           let purchaseActions = root.querySelectorAll('.game_purchase_action_bg')
           let purchaseAction = purchaseActions.filter( p => p.querySelector(".discount_original_price") || p.querySelector(".game_purchase_price"))[0]
 
-          let discountedPrice 
-          let originalPrice
+          let discountedPrice = ""
+          let originalPrice = ""
 
-          if (purchaseAction.querySelector(".discount_original_price")) {
+          if (purchaseAction && purchaseAction.querySelector(".discount_original_price")) {
             discountedPrice = purchaseAction.querySelector(".discount_final_price").rawText.trim()
             originalPrice = purchaseAction.querySelector(".discount_original_price").rawText.trim()
           }
-          else {
+          else if (purchaseAction) {
             discountedPrice = purchaseAction.querySelector(".game_purchase_price").rawText.trim()
             originalPrice = purchaseAction.querySelector(".game_purchase_price").rawText.trim()
           }
           
           
 
-          let playerCount
+          let playerCount = ""
           await getPlayerCount(id).then(x=> playerCount = x)
 
 
@@ -174,7 +218,10 @@ router.post('/', (req, resmain) => {
         
           
           payload = {
-            similarGames: similar_games ? similar_games.slice(0, 9) : similar_games ,
+            similarGames: similar_games,
+            similarGamesTS: similar_games_ts,
+            similarGamesNR: similar_games_nr,
+            similarGamesUR: similar_games_ur,
             id: id,
             name: name,
             releaseDate: release_date.replace(",",""),
@@ -185,7 +232,7 @@ router.post('/', (req, resmain) => {
             languages: languages.join(";"),
             tags: tags.join(";"),
             genres: genres.join(";"),
-            playerCount: playerCount,
+            playerCount: playerCount ? playerCount : "",
             reviewSummary: review_summary,
 
             allReviews: reviews[0],
@@ -194,13 +241,18 @@ router.post('/', (req, resmain) => {
             metascore: metascore
 
           }
+          //console.log(payload)
       //        console.log(getSteamDb(id))
-          await getSteamSpy(id).then(x=> {
+          
+          await getSteamSpy(id,req.body.type).then(x=> {
 
             Object.keys(x).forEach( (d, i) => {
               payload[d] = x[d]
             })
           })
+ 
+      
+        //  console.log(payload)
           
           if (headersent === false) {
             resmain.writeHead(200, { 'Content-Type': 'application/json' })
@@ -216,9 +268,9 @@ router.post('/', (req, resmain) => {
         
         
       } catch(e) {
-        console.log("error")
-        console.log(e.message)
-        console.log(e.stack)
+        //console.log("error")
+        //console.log(e.message)
+        //console.log(e.stack)
         retries += 1
 
       }
@@ -230,6 +282,7 @@ router.post('/', (req, resmain) => {
 
   })();
 })
+
 
 
 router.get('/another', (req, res) => res.json({ route: req.originalUrl }));
