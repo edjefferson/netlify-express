@@ -108,6 +108,7 @@ const getSteamSpyApi = async(id,type) => {
     try {
       let url = "https://steamspy.com/api.php?request=appdetails&appid=" + id
       const response = await got(url, { json: true })
+      console.log(response)
       const data = response.body
 
       owners = data.owners
@@ -121,10 +122,16 @@ const getSteamSpyApi = async(id,type) => {
       //console.log(text)
       
       
-    playtime2weeks = "" + Math.floor(data.average_2weeks/60) + ":"  + (data.average_2weeks % 60).toString().padStart(2, "0")
+    let avplaytime2weeks = "" + Math.floor(data.average_2weeks/60) + ":"  + (data.average_2weeks % 60).toString().padStart(2, "0")
 
-    playtimeTotal = "" + Math.floor(data.average_forever/60) + ":" + (data.average_forever % 60).toString().padStart(2, "0")
+    let avplaytimeTotal = "" + Math.floor(data.average_forever/60) + ":" + (data.average_forever % 60).toString().padStart(2, "0")
+    
+    let medplaytime2weeks = "" + Math.floor(data.median_2weeks/60) + ":"  + (data.median_2weeks % 60).toString().padStart(2, "0")
 
+    let medplaytimeTotal = "" + Math.floor(data.median_forever/60) + ":" + (data.median_forever % 60).toString().padStart(2, "0")
+
+    playtime2weeks = avplaytime2weeks + " (average) " + medplaytime2weeks + " (median)"
+    playtimeTotal = avplaytimeTotal + " (average) " + medplaytimeTotal + " (median)"
       
   } catch (error) {
       //console.log(error);
