@@ -98,6 +98,47 @@ const getSteamSpy = async(id,type) => {
   }
 }
 
+const getSteamSpyApi = async(id,type) => {
+  let owners = ""
+  let followers = ""
+  let peakPlayers = ""
+  let playtime2weeks = ""
+  let playtimeTotal = ""
+
+    try {
+      let url = "https://steamspy.com/api.php?request=appdetails&appid=" + id
+      const response = await got(url, { json: true })
+      const data = response.body
+
+      owners = data.owners
+      owners = owners.replaceAll(",","")
+      owners = owners.replace("..","-")
+
+      followers = ""
+      followers = followers.replace(/,/g,"")
+
+      peakPlayers = data.ccu
+      //console.log(text)
+      
+      
+    playtime2weeks = "" + Math.floor(data.average_2weeks/60) + ":"  + (data.average_2weeks % 60).toString().padStart(2, "0")
+
+    playtimeTotal = "" + Math.floor(data.average_forever/60) + ":" + (data.average_forever % 60).toString().padStart(2, "0")
+
+      
+  } catch (error) {
+      //console.log(error);
+    }
+  
+  return {
+    owners: owners,
+    followers: followers,
+    peakPlayers: peakPlayers,
+    playtime2weeks: playtime2weeks,
+    playtimeTotal: playtimeTotal
+  }
+}
+
 
 
 
@@ -244,7 +285,7 @@ router.post('/', (req, resmain) => {
           //console.log(payload)
       //        console.log(getSteamDb(id))
           
-          await getSteamSpy(id,req.body.type).then(x=> {
+          await getSteamSpyApi(id,req.body.type).then(x=> {
 
             Object.keys(x).forEach( (d, i) => {
               payload[d] = x[d]
